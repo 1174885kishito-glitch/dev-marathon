@@ -20,7 +20,7 @@ services:
       - ./src/node:/app
       - ./work:/work
     working_dir: /app
-    command: npm start
+    command: npm run dev
     tty: true # 開発時のみ有効
 
   db:
