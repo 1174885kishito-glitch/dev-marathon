@@ -44,7 +44,13 @@
           const cell2 = row.insertCell(1);
           const cell3 = row.insertCell(2);
           cell1.textContent = index + 1;
-          cell2.textContent = customer.company_name;
+
+          // 会社名にリンクを追加
+          const link = document.createElement('a');
+          link.href = `./detail.html?id=${customer.customer_id}`;
+          link.textContent = customer.company_name;
+          cell2.appendChild(link);
+
           cell3.textContent = customer.contact;
         });
       })

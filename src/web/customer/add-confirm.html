@@ -1,22 +1,93 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>案件情報入力</title>
+    <title>顧客情報確認</title>
     <!-- Bootstrap CSSの読み込み -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 </head>
+
 <body>
     <div class="container mt-5">
-        <!-- ここにHTMLを書く -->
+        <h2 class="mb-4">以下の内容で登録しますか？</h2>
+        <div class="card mb-4">
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">会社名</dt>
+                    <dd class="col-sm-9" id="confirm-companyName"></dd>
+
+                    <dt class="col-sm-3">業種</dt>
+                    <dd class="col-sm-9" id="confirm-industry"></dd>
+
+                    <dt class="col-sm-3">連絡先</dt>
+                    <dd class="col-sm-9" id="confirm-contact"></dd>
+
+                    <dt class="col-sm-3">所在地</dt>
+                    <dd class="col-sm-9" id="confirm-location"></dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <button type="button" class="btn btn-secondary" id="back-btn">修正する</button>
+            <button type="button" class="btn btn-primary" id="submit-btn">登録する</button>
+        </div>
     </div>
+
     <script type="module">
-        <!-- ここにJSを書く -->
+        import config from '../config.js';
+
+        // sessionStorageからデータを取得して表示
+        const savedData = sessionStorage.getItem('customerData');
+
+        if (!savedData) {
+            alert('入力データが見つかりません。入力画面に戻ります。');
+            window.location.href = './add.html';
+        } else {
+            const data = JSON.parse(savedData);
+            document.getElementById('confirm-companyName').textContent = data.companyName || '';
+            document.getElementById('confirm-industry').textContent = data.industry || '';
+            document.getElementById('confirm-contact').textContent = data.contact || '';
+            document.getElementById('confirm-location').textContent = data.location || '';
+        }
+
+        // 戻るボタンの処理
+        document.getElementById('back-btn').addEventListener('click', () => {
+            window.location.href = './add.html';
+        });
+
+        // 登録ボタンの処理
+        document.getElementById('submit-btn').addEventListener('click', () => {
+            const data = JSON.parse(savedData);
+            // URLSearchParams形式に変換
+            const params = new URLSearchParams();
+            Object.keys(data).forEach(key => params.append(key, data[key]));
+
+            fetch(config.apiUrl + '/add-customer', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: params
+            }).then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('顧客情報が正常に保存されました。');
+                        sessionStorage.removeItem('customerData'); // データをクリア
+                        window.location.href = './list.html'; // 一覧へ遷移
+                    } else {
+                        alert('保存に失敗しました。');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        });
     </script>
     <!-- BootstrapのJavaScriptの読み込み -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 </body>
+
 </html>
