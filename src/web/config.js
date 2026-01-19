@@ -1,5 +1,5 @@
 const config = {
-  apiUrl: 'http://localhost:5454'
+  apiUrl: '/api_toshiki_kobayashi'
 };
 
 export default config;
