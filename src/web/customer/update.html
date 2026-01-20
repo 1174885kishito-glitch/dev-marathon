@@ -1,22 +1,104 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>案件情報入力</title>
+    <title>顧客情報更新</title>
     <!-- Bootstrap CSSの読み込み -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 </head>
+
 <body>
     <div class="container mt-5">
-        <!-- ここにHTMLを書く -->
+        <h2 class="mb-4">顧客情報を編集してください</h2>
+        <form id="customer-form">
+            <input type="hidden" id="customerId" name="customerId">
+            <div class="form-group">
+                <label for="companyName">会社名:</label>
+                <input type="text" class="form-control" id="companyName" name="companyName" required>
+            </div>
+            <div class="form-group">
+                <label for="industry">業種:</label>
+                <input type="text" class="form-control" id="industry" name="industry" required>
+            </div>
+            <div class="form-group">
+                <label for="contact">連絡先:</label>
+                <input type="text" class="form-control" id="contact" name="contact" required>
+            </div>
+            <div class="form-group">
+                <label for="location">所在地:</label>
+                <input type="text" class="form-control" id="location" name="location" required>
+            </div>
+            <div class="d-flex justify-content-between">
+                <a href="javascript:history.back()" class="btn btn-secondary">戻る</a>
+                <button type="submit" class="btn btn-primary">確認</button>
+            </div>
+        </form>
     </div>
     <script type="module">
-        <!-- ここにJSを書く -->
+        import config from '../config.js';
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const customerId = urlParams.get('id');
+
+        if (!customerId) {
+            alert('顧客IDが指定されていません。');
+            window.location.href = './list.html';
+        } else {
+            // 既存データを取得して表示
+            fetch(`${config.apiUrl}/customer/${customerId}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('customerId').value = data.customer_id;
+                    document.getElementById('companyName').value = data.company_name;
+                    document.getElementById('industry').value = data.industry;
+                    document.getElementById('contact').value = data.contact;
+                    document.getElementById('location').value = data.location;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('データの取得に失敗しました。');
+                });
+        }
+
+        // フォーム送信時の処理
+        document.getElementById('customer-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const data = {};
+            formData.forEach((value, key) => {
+                data[key] = value;
+            });
+
+            // 入力データをsessionStorageに保存
+            sessionStorage.setItem('updateCustomerData', JSON.stringify(data));
+
+            // 確認画面へ遷移
+            window.location.href = './update-confirm.html';
+        });
+
+        // ページ読み込み時の処理（戻ってきた場合など）
+        window.addEventListener('load', () => {
+            const savedData = sessionStorage.getItem('updateCustomerData');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                // IDが一致する場合のみ復元
+                if (data.customerId == customerId) {
+                    Object.keys(data).forEach(key => {
+                        const input = document.getElementById(key);
+                        if (input) {
+                            input.value = data[key];
+                        }
+                    });
+                }
+            }
+        });
     </script>
     <!-- BootstrapのJavaScriptの読み込み -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 </body>
+
 </html>

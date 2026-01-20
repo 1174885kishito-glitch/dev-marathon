@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
     <!-- Bootstrap CSSの読み込み -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 </head>
+
 <body>
     <div class="container mt-5">
         <h2 class="mb-4">顧客情報を入力してください</h2>
@@ -31,28 +33,34 @@
         </form>
     </div>
     <script type="module">
-        import config from '../config.js';
-
-        document.getElementById('customer-form').addEventListener('submit', function(e) {
+        // フォーム送信時の処理
+        document.getElementById('customer-form').addEventListener('submit', function (e) {
             e.preventDefault();
             const formData = new FormData(this);
-            fetch(config.apiUrl + '/add-customer', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: new URLSearchParams([...formData])
-            }).then(response => response.json())
-              .then(data => {
-                if(data.success) {
-                    alert('顧客情報が正常に保存されました。');
-                    // フォームをリセット
-                    document.getElementById('customer-form').reset();
-                } else {
-                    alert('保存に失敗しました。');
-                }
-              })
-              .catch(error => console.error('Error:', error));
+            const data = {};
+            formData.forEach((value, key) => {
+                data[key] = value;
+            });
+
+            // 入力データをsessionStorageに保存
+            sessionStorage.setItem('customerData', JSON.stringify(data));
+
+            // 確認画面へ遷移
+            window.location.href = './add-confirm.html';
+        });
+
+        // ページ読み込み時の処理（戻ってきた場合など）
+        window.addEventListener('load', () => {
+            const savedData = sessionStorage.getItem('customerData');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                Object.keys(data).forEach(key => {
+                    const input = document.getElementById(key);
+                    if (input) {
+                        input.value = data[key];
+                    }
+                });
+            }
         });
     </script>
     <!-- BootstrapのJavaScriptの読み込み -->
@@ -60,4 +68,5 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 </body>
+
 </html>

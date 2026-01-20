@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>顧客詳細</title>
+    <!-- Bootstrap CSSの読み込み -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h2 class="mb-4">顧客詳細</h2>
+        <div class="card">
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">ID</dt>
+                    <dd class="col-sm-9" id="detail-id"></dd>
+
+                    <dt class="col-sm-3">会社名</dt>
+                    <dd class="col-sm-9" id="detail-companyName"></dd>
+
+                    <dt class="col-sm-3">業種</dt>
+                    <dd class="col-sm-9" id="detail-industry"></dd>
+
+                    <dt class="col-sm-3">連絡先</dt>
+                    <dd class="col-sm-9" id="detail-contact"></dd>
+
+                    <dt class="col-sm-3">所在地</dt>
+                    <dd class="col-sm-9" id="detail-location"></dd>
+
+                    <dt class="col-sm-3">作成日時</dt>
+                    <dd class="col-sm-9" id="detail-created"></dd>
+
+                    <dt class="col-sm-3">更新日時</dt>
+                    <dd class="col-sm-9" id="detail-updated"></dd>
+                </dl>
+            </div>
+        </div>
+        <div class="mt-4">
+            <a href="./list.html" class="btn btn-secondary">一覧に戻る</a>
+            <a id="edit-btn" href="#" class="btn btn-primary ml-2">編集</a>
+            <button id="delete-btn" class="btn btn-danger ml-2">削除</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import config from '../config.js';
+
+        // URLパラメータからIDを取得
+        const urlParams = new URLSearchParams(window.location.search);
+        const customerId = urlParams.get('id');
+
+        if (!customerId) {
+            alert('顧客IDが指定されていません。');
+            window.location.href = './list.html';
+        } else {
+            // APIから詳細データを取得
+            fetch(`${config.apiUrl}/customer/${customerId}`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(data => {
+                    document.getElementById('detail-id').textContent = data.customer_id;
+                    document.getElementById('detail-companyName').textContent = data.company_name;
+                    document.getElementById('detail-industry').textContent = data.industry;
+                    document.getElementById('detail-contact').textContent = data.contact;
+                    document.getElementById('detail-location').textContent = data.location;
+                    document.getElementById('detail-created').textContent = new Date(data.created_date).toLocaleString();
+                    document.getElementById('detail-updated').textContent = new Date(data.updated_date).toLocaleString();
+
+                    // 編集ボタンのリンクを設定
+                    document.getElementById('edit-btn').href = `./update.html?id=${data.customer_id}`;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('データの取得に失敗しました。');
+                });
+
+            // 削除ボタンの処理
+            document.getElementById('delete-btn').addEventListener('click', () => {
+                if (confirm('削除していいですか？')) {
+                    fetch(`${config.apiUrl}/customer/${customerId}`, {
+                        method: 'DELETE'
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert('削除しました。');
+                                window.location.href = './list.html';
+                            } else {
+                                alert('削除に失敗しました。');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('エラーが発生しました。');
+                        });
+                }
+            });
+        }
+    </script>
+    <!-- BootstrapのJavaScriptの読み込み -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</body>
+
+</html>
