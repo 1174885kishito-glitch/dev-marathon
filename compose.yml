@@ -20,6 +20,11 @@ services:
       - ./src/node:/app
       - ./work:/work
     working_dir: /app
+    environment:
+      - DB_HOST=db
+      - DB_USER=${POSTGRES_USER}
+      - DB_NAME=${POSTGRES_DB}
+      - DB_PASS=${POSTGRES_PASSWORD}
     command: npm run dev
     tty: true # 開発時のみ有効
 
