@@ -16,4 +16,4 @@ jobs:
           SSH_PORT: ${{ secrets.DEV_SSH_PORT }}
           SSH_USER: ${{ secrets.DEV_SSH_USER }}
           SSH_KEY: ${{ secrets.DEV_SSH_KEY }}
-      - run: ssh ${{ steps.ssh.outputs.SERVER }} bash /app/toshiki_kobayashi/deploy.sh toshiki_kobayashi
+      - run: ssh ${{ steps.ssh.outputs.SERVER }} "cd /app/toshiki_kobayashi && git fetch origin main && git checkout -f origin/main -- deploy.sh && bash deploy.sh toshiki_kobayashi"

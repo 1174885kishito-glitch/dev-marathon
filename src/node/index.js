@@ -9,20 +9,25 @@ app.use(cors());
 app.use(express.json());
 
 const { Pool } = require("pg");
-const pool = new Pool({
-  // Local dev
-  user: "user_5454",
-  host: "db",
-  database: "crm_5454",
-  password: "pass_5454",
 
-  // Production
-  // user: "user_toshiki_kobayashi",
-  // host: "localhost",
-  // database: "db_toshiki_kobayashi",
-  // password: "5Rw5YDaWc5jc",
-  port: 5432,
+// ✅ 環境変数(本番/Actions) → 無ければ local の値
+const dbConfig = {
+  user: process.env.DB_USER || "user_5454",
+  host: process.env.DB_HOST || "localhost",
+  database: process.env.DB_NAME || "crm_5454",
+  password: process.env.DB_PASS || "pass_5454",
+  port: Number(process.env.DB_PORT || 5432),
+};
+
+// 起動時に「どのDBを見に行くか」必ずログに出す（切り分け最強）
+console.log("DB CONFIG =>", {
+  user: dbConfig.user,
+  host: dbConfig.host,
+  database: dbConfig.database,
+  port: dbConfig.port,
 });
+
+const pool = new Pool(dbConfig);
 
 app.listen(port, "0.0.0.0", () => {
   console.log(`Server running on port ${port}`);
@@ -34,14 +39,17 @@ app.get("/customers", async (req, res) => {
     res.send(customerData.rows);
   } catch (err) {
     console.error(err);
-    res.send("Error " + err);
+    res.status(500).send("Error " + err.message);
   }
 });
 
 app.get("/customer/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const customer = await pool.query("SELECT * FROM customers WHERE customer_id = $1", [id]);
+    const customer = await pool.query(
+      "SELECT * FROM customers WHERE customer_id = $1",
+      [id]
+    );
     if (customer.rows.length > 0) {
       res.json(customer.rows[0]);
     } else {
@@ -56,7 +64,10 @@ app.get("/customer/:id", async (req, res) => {
 app.delete("/customer/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const result = await pool.query("DELETE FROM customers WHERE customer_id = $1", [id]);
+    const result = await pool.query(
+      "DELETE FROM customers WHERE customer_id = $1",
+      [id]
+    );
     if (result.rowCount > 0) {
       res.json({ success: true });
     } else {
@@ -87,8 +98,6 @@ app.put("/customer/:id", async (req, res) => {
   }
 });
 
-
-
 app.post("/add-customer", async (req, res) => {
   try {
     const { companyName, industry, contact, location } = req.body;
@@ -99,7 +108,7 @@ app.post("/add-customer", async (req, res) => {
     res.json({ success: true, customer: newCustomer.rows[0] });
   } catch (err) {
     console.error(err);
-    res.json({ success: false });
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
