@@ -16,3 +16,10 @@ cp "$WEB_DIR/prod_config.js" "$WEB_DIR/config.js"
 
 # 3. バックエンドの設定を本番用に上書き (★今回追加する部分)
 cp "$APP_DIR/src/node/prod_index.js" "$APP_DIR/src/node/index.js"
+
+# 4. アプリケーションの再起動
+# 既存のプロセスを停止 (エラーでも続行)
+pkill -u $USER_NAME node || true
+
+# 新しいプロセスを起動
+nohup node "$APP_DIR/src/node/index.js" > "$APP_DIR/src/node/start.log" 2>&1 &
