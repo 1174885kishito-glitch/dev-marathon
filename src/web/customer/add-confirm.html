@@ -36,8 +36,11 @@
         </div>
     </div>
 
-    <script type="module">
-        import config from '/toshiki_kobayashi/config.js';
+    <script>
+        // APIの設定
+        const config = {
+            apiUrl: 'http://127.0.0.1:5454'
+        };
 
         // sessionStorageからデータを取得して表示
         const savedData = sessionStorage.getItem('customerData');
